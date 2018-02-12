@@ -1,28 +1,22 @@
-(ns parse-ical.core)
+(ns parse-ical.core
+  (:require [clojure.string :as s :refer [split trim]]))
 
-(defrecord vcalendar [prodid
-                      version
-                      calscale
-                      events])
+(set! *warn-on-reflection* true)
 
-(defrecord vevent [dtstamp
-                   dtstart
-                   dtend
-                   uid
-                   summary
-                   description
-                   location])
-(defn split-by-newline [s] (clojure.string/split s #"\n"))
+(defrecord vcalendar [prodid version calscale events])
 
-(defn begin-vcalendar? [s] (= s "BEGIN:VCALENDAR"))
-(defn end-vcalendar? [s] (= s "END:VCALENDAR"))
-(defn begin-event? [s] (= s "BEGIN:VEVENT"))
-(defn end-event? [s] (= s "END:VEVENT"))
+(defrecord vevent [dtstamp dtstart dtend uid summary description location])
+
+(defn- split-by-newline [s] (s/split s #"\n"))
+(defn- split-into-calendars [s] (s/split s #"(?i)END:VCALENDAR"))
+
+(def ^:private vcalendar-begin? (partial = "BEGIN:VCALENDAR"))
+(def ^:private vcalendar-end? (partial = "END:VCALENDAR"))
+(def ^:private vevent-begin? (partial = "BEGIN:VEVENT"))
+(def ^:private vevent-end? (partial = "END:VEVENT"))
 
 (defn parse-ical
-  "Parses the passed string as an iCalendar"
+  "Parses the passed string as an iCalendar file containing one or more actual iCalendars"
   [s]
-  (let [lines (split-by-newline s)]
-    (reduce 
-      (fn [acc s] 
-        (if ()) [] s))))
+  (let [calendars (split-into-calendars (s/trim s))
+        coo (prn calendars)]))
